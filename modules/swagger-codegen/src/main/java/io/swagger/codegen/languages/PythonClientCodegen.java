@@ -15,8 +15,8 @@ import java.util.HashSet;
 import org.apache.commons.lang.StringUtils;
 
 public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig {
-    protected String packageName = null;
-    protected String packageVersion = null;
+    protected String packageName;
+    protected String packageVersion;
 
     public PythonClientCodegen() {
         super();
@@ -65,7 +65,8 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
                 .defaultValue("swagger_client"));
         cliOptions.add(new CliOption(CodegenConstants.PACKAGE_VERSION, "python package version.")
                 .defaultValue("1.0.0"));
-        cliOptions.add(new CliOption(CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG, CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG_DESC));
+        cliOptions.add(new CliOption(CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG,
+                CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG_DESC, BooleanProperty.TYPE));
     }
 
     @Override

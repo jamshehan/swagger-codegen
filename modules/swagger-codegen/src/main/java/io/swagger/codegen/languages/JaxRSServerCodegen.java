@@ -100,6 +100,8 @@ public class JaxRSServerCodegen extends JavaClientCodegen implements CodegenConf
                 (sourceFolder + '/' + apiPackage).replace(".", "/"), "NotFoundException.java"));
         supportingFiles.add(new SupportingFile("web.mustache",
                 ("src/main/webapp/WEB-INF"), "web.xml"));
+        supportingFiles.add(new SupportingFile("StringUtil.mustache",
+                (sourceFolder + '/' + apiPackage).replace(".", "/"), "StringUtil.java"));
 
         if (additionalProperties.containsKey("dateLibrary")) {
             setDateLibrary(additionalProperties.get("dateLibrary").toString());
@@ -166,6 +168,16 @@ public class JaxRSServerCodegen extends JavaClientCodegen implements CodegenConf
         if("/".equals(swagger.getBasePath())) {
             swagger.setBasePath("");
         }
+
+        String host = swagger.getHost();
+        String port = "8080";
+        if(host != null) {
+            String[] parts = host.split(":");
+            if(parts.length > 1) {
+                port = parts[1];
+            }
+        }
+        this.additionalProperties.put("serverPort", port);
         if(swagger != null && swagger.getPaths() != null) {
             for(String pathname : swagger.getPaths().keySet()) {
                 Path path = swagger.getPath(pathname);
@@ -192,22 +204,6 @@ public class JaxRSServerCodegen extends JavaClientCodegen implements CodegenConf
                 }
             }
         }
-    }
-
-    @Override
-    public Map<String, Object> postProcessModels(Map<String, Object> objs) {
-        List<Object> models = (List<Object>) objs.get("models");
-        for (Object _mo : models) {
-            Map<String, Object> mo = (Map<String, Object>) _mo;
-            CodegenModel cm = (CodegenModel) mo.get("model");
-            for (CodegenProperty var : cm.vars) {
-                // handle default value for enum, e.g. available => StatusEnum.available
-                if (var.isEnum && var.defaultValue != null && !"null".equals(var.defaultValue)) {
-                    var.defaultValue = var.datatypeWithEnum + "." + var.defaultValue;
-                }
-            }
-        }
-        return objs;
     }
 
     @Override

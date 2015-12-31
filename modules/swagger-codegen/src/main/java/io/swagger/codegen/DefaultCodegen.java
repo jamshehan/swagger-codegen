@@ -71,9 +71,9 @@ public class DefaultCodegen {
     protected List<SupportingFile> supportingFiles = new ArrayList<SupportingFile>();
     protected List<CliOption> cliOptions = new ArrayList<CliOption>();
     protected boolean skipOverwrite;
-    protected boolean supportsInheritance = false;
+    protected boolean supportsInheritance;
     protected Map<String, String> supportedLibraries = new LinkedHashMap<String, String>();
-    protected String library = null;
+    protected String library;
     protected Boolean sortParamsByRequiredFlag = true;
     protected Boolean ensureUniqueParams = true;
 
@@ -119,6 +119,12 @@ public class DefaultCodegen {
     public Map<String, Object> postProcessSupportingFileData(Map<String, Object> objs) {
         return objs;
     }
+
+    // override to post-process any model properties
+    public void postProcessModelProperty(CodegenModel model, CodegenProperty property){}
+
+    // override to post-process any parameters
+    public void postProcessParameter(CodegenParameter parameter){}
 
     //override with any special handling of the entire swagger spec
     public void preprocessSwagger(Swagger swagger) {
@@ -434,9 +440,10 @@ public class DefaultCodegen {
         importMapping.put("LocalTime", "org.joda.time.*");
 
         cliOptions.add(new CliOption(CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG,
-                CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG_DESC).defaultValue("true"));
-        cliOptions.add(new CliOption(CodegenConstants.ENSURE_UNIQUE_PARAMS, CodegenConstants.ENSURE_UNIQUE_PARAMS_DESC)
-                .defaultValue("true"));
+                CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG_DESC, BooleanProperty.TYPE)
+                .defaultValue(Boolean.TRUE.toString()));
+        cliOptions.add(new CliOption(CodegenConstants.ENSURE_UNIQUE_PARAMS, CodegenConstants.ENSURE_UNIQUE_PARAMS_DESC,
+                BooleanProperty.TYPE).defaultValue(Boolean.TRUE.toString()));
     }
 
     /**
@@ -619,7 +626,9 @@ public class DefaultCodegen {
      **/
     public String getSwaggerType(Property p) {
         String datatype = null;
-        if (p instanceof StringProperty) {
+        if (p instanceof StringProperty && "number".equals(p.getFormat())) {
+            datatype = "BigDecimal";
+        } else if (p instanceof StringProperty) {
             datatype = "string";
         } else if (p instanceof ByteArrayProperty) {
             datatype = "ByteArray";
@@ -841,6 +850,12 @@ public class DefaultCodegen {
                 addParentContainer(m, name, mapProperty);
             }
             addVars(m, impl.getProperties(), impl.getRequired());
+        }
+
+        if(m.vars != null) {
+            for(CodegenProperty prop : m.vars) {
+                postProcessModelProperty(m, prop);
+            }
         }
         return m;
     }
@@ -1594,6 +1609,8 @@ public class DefaultCodegen {
             }
             p.paramName = toParamName(bp.getName());
         }
+
+        postProcessParameter(p);
         return p;
     }
 

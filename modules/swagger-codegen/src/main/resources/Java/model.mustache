@@ -1,17 +1,10 @@
 package {{package}};
 
-import {{invokerPackage}}.StringUtil;
 {{#imports}}import {{import}};
 {{/imports}}
 
-{{#serializableModel}}
-import java.io.Serializable;{{/serializableModel}}
-import java.util.Objects;
-
-import io.swagger.annotations.*;
-import com.fasterxml.jackson.annotation.*;
+{{#serializableModel}}import java.io.Serializable;{{/serializableModel}}
 {{#models}}
-
 {{#model}}{{#description}}
 /**
  * {{description}}
