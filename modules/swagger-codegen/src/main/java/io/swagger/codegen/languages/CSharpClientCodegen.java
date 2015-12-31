@@ -28,6 +28,7 @@ public class CSharpClientCodegen extends DefaultCodegen implements CodegenConfig
     protected String packageVersion = "1.0.0";
     protected String clientPackage = "IO.Swagger.Client";
     protected String sourceFolder = "src" + File.separator + "main" + File.separator + "csharp";
+	protected String genericTypeParam = "";
 
     public CSharpClientCodegen() {
         super();
@@ -168,7 +169,7 @@ public class CSharpClientCodegen extends DefaultCodegen implements CodegenConfig
     @Override
     public String toVarName(String name) {
         // sanitize name 
-        name = sanitizeName(name);
+        name = sanitizeName(name.replaceAll("(.*)\\[(.*)\\]", "$1"));
 
         // if it's all uppper case, do nothing
         if (name.matches("^[A-Z_]*$")) {
@@ -210,7 +211,11 @@ public class CSharpClientCodegen extends DefaultCodegen implements CodegenConfig
     }
 
     @Override
-    public String toModelName(String name) {
+    public String toModelName(String name) {        
+        return toModelNameIncludeGeneric(name).replaceAll("(.*)<(.*)>", "$1<T>");
+    }
+
+	public String toModelNameIncludeGeneric(String name) {
         // model name cannot use reserved keyword, e.g. return
         if (reservedWords.contains(name)) {
             throw new RuntimeException(name + " (reserved word) cannot be used as a model name");
@@ -218,13 +223,22 @@ public class CSharpClientCodegen extends DefaultCodegen implements CodegenConfig
 
         // camelize the model name
         // phone_number => PhoneNumber
-        return camelize(name);
+		String modelName = camelize(name);
+		if (modelName.indexOf('[') > 0 && modelName.lastIndexOf(']') > modelName.indexOf('[')) {
+			genericTypeParam = modelName.substring(modelName.indexOf('['),modelName.lastIndexOf(']'));
+		}
+        return modelName.replaceAll("(.*)\\[(.*)\\]", "$1<$2>");
     }
 
     @Override
     public String toModelFilename(String name) {
         // should be the same as the model name
-        return toModelName(name);
+        return toModelName(name).replaceAll("(.*)<(.*)>", "$1");
+    }
+
+    @Override
+    public String getTypeDeclaration(String name) {        
+        return super.getTypeDeclaration(name.replace("<T>", "<" + genericTypeParam + ">"));
     }
 
 
@@ -255,7 +269,7 @@ public class CSharpClientCodegen extends DefaultCodegen implements CodegenConfig
         } else {
             type = swaggerType;
         }
-        return toModelName(type);
+        return toModelNameIncludeGeneric(type);
     }
 
     @Override

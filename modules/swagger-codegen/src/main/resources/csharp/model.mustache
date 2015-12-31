@@ -16,12 +16,12 @@ namespace {{packageName}}.Model
     /// {{description}}
     /// </summary>
     [DataContract]
-    public class {{classname}} : IEquatable<{{classname}}>{{#parent}}, {{{parent}}}{{/parent}}
+    public class {{{classname}}} : IEquatable<{{{classname}}}>{{#parent}}, {{{parent}}}{{/parent}}
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="{{classname}}" /> class.
+        /// Initializes a new instance of the <see cref="{{{classname}}}" /> class.
         /// </summary>
-        public {{classname}}()
+        public {{{classVarName}}}()
         {
             {{#vars}}{{#defaultValue}}this.{{name}} = {{{defaultValue}}};
             {{/defaultValue}}{{/vars}}
@@ -44,7 +44,7 @@ namespace {{packageName}}.Model
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class {{classname}} {\n");
+            sb.Append("class {{{classname}}} {\n");
             {{#vars}}sb.Append("  {{name}}: ").Append({{name}}).Append("\n");
             {{/vars}}
             sb.Append("}\n");
@@ -68,15 +68,15 @@ namespace {{packageName}}.Model
         public override bool Equals(object obj)
         {
             // credit: http://stackoverflow.com/a/10454552/677735
-            return this.Equals(obj as {{classname}});
+            return this.Equals(obj as {{{classname}}});
         }
 
         /// <summary>
-        /// Returns true if {{classname}} instances are equal
+        /// Returns true if {{{classname}}} instances are equal
         /// </summary>
-        /// <param name="obj">Instance of {{classname}} to be compared</param>
+        /// <param name="obj">Instance of {{{classname}}} to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals({{classname}} other)
+        public bool Equals({{{classname}}} other)
         {
             // credit: http://stackoverflow.com/a/10454552/677735
             if (other == null)
